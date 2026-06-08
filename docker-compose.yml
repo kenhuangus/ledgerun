@@ -1,0 +1,93 @@
+# One `docker compose up` brings up the whole stack (architecture.md §9):
+#   reference-db (:5433)  reference-api (:8000)  app-db (:5432)
+#   mcp-server            app (:3000)
+#
+# The reference-* service blocks are copied (not `include`d) from
+# reference-api/docker-compose.yml so we can rename them and avoid the bare `db`
+# service-name / port collision with our own app-db. Behavior is identical:
+# reference Postgres on host :5433, reference FastAPI on :8000.
+
+services:
+  reference-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ctref
+      POSTGRES_PASSWORD: ctref
+      POSTGRES_DB: ctref
+    ports:
+      - "5433:5432"
+    volumes:
+      - reference_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ctref -d ctref"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+
+  reference-api:
+    build:
+      context: ./reference-api/services/api
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://ctref:ctref@reference-db:5432/ctref
+    depends_on:
+      reference-db:
+        condition: service_healthy
+
+  app-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ledgerun
+      POSTGRES_PASSWORD: ledgerun
+      POSTGRES_DB: ledgerun
+    ports:
+      - "5434:5432"
+    volumes:
+      - app_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ledgerun -d ledgerun"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+
+  mcp-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["npm", "run", "mcp"]
+    environment:
+      REFERENCE_API_URL: http://reference-api:8000
+      MCP_TRANSPORT: http
+    ports:
+      - "7000:7000"
+    depends_on:
+      reference-api:
+        condition: service_started
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["npm", "run", "start"]
+    environment:
+      DATABASE_URL: postgresql://ledgerun:ledgerun@app-db:5432/ledgerun?schema=public
+      REFERENCE_API_URL: http://reference-api:8000
+      MCP_TRANSPORT: http
+      MCP_SERVER_URL: http://mcp-server:7000
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-opus-4-8}
+    ports:
+      - "3000:3000"
+    depends_on:
+      app-db:
+        condition: service_healthy
+      mcp-server:
+        condition: service_started
+      reference-api:
+        condition: service_started
+
+volumes:
+  reference_postgres_data:
+  app_postgres_data:

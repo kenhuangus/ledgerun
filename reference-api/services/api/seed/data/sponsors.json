@@ -1,0 +1,6 @@
+[
+  {"id": 1, "name": "Northwind Pharma", "code": "NWD"},
+  {"id": 2, "name": "Contoso Therapeutics", "code": "CON"},
+  {"id": 3, "name": "Fabrikam Biopharma", "code": "FAB"},
+  {"id": 4, "name": "Woodgrove Life Sciences", "code": "WDL"}
+]

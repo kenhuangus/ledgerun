@@ -1,0 +1,144 @@
+// Ledger Run — app database schema.
+// Holds OUR workflow state only. Canonical reference data (sponsors/studies/
+// sites/catalog) lives in the separate reference Postgres reached via MCP and is
+// NOT modeled here. Mirrors architecture.md §3.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Invoice {
+  id         String       @id @default(cuid())
+  source     String // email | upload | sample
+  fileName   String
+  rawUri     String // stored PDF/image blob (path or uri)
+  receivedAt DateTime     @default(now())
+  state      InvoiceState @default(RECEIVED)
+
+  run        WorkflowRun?
+  extraction Extraction?
+  resolution ContextResolution?
+  lineItems  LineItem[]
+  decision   Decision?
+  submission Submission?
+  qcActions  QcAction[]
+
+  @@index([state])
+  @@index([receivedAt])
+}
+
+enum InvoiceState {
+  RECEIVED
+  EXTRACTING
+  EXTRACTED
+  RESOLVING
+  CONTEXT_RESOLVED
+  MATCHING
+  MATCHED
+  DECIDING
+  SUBMITTED
+  HELD
+  FAILED
+}
+
+model Extraction {
+  id         String  @id @default(cuid())
+  invoiceId  String  @unique
+  invoice    Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  metadata   Json // InvoiceMetadata: sponsorName, studyName/protocol, siteName, invoiceNo, dates, currency, totals (each with provenance)
+  modelInfo  Json // model id + prompt version + token usage
+  confidence Float
+}
+
+model ContextResolution {
+  id          String  @id @default(cuid())
+  invoiceId   String  @unique
+  invoice     Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  sponsorId   String? // reference sponsor id (stringified int from the reference API)
+  studyId     String?
+  siteId      String?
+  studySiteId String?
+  status      String // resolved_high | resolved_corrected | ambiguous | unresolved
+  evidence    Json // candidates considered, which signal won, corrections applied
+  confidence  Float
+}
+
+model LineItem {
+  id              String  @id @default(cuid())
+  invoiceId       String
+  invoice         Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  rawDescription  String
+  quantity        Float?
+  unitPrice       Float?
+  amount          Float?
+  matchedItemId   String? // reference catalog_item id (resolved via MCP)
+  matchOutcome    String? // matched_high | matched_low | ambiguous | unmatched | price_mismatch
+  matchConfidence Float?
+  rationale       String? // why this match
+  candidates      Json? // ranked alternates
+
+  @@index([invoiceId])
+}
+
+model Decision {
+  id        String   @id @default(cuid())
+  invoiceId String   @unique
+  invoice   Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  verdict   String // SUBMIT | HOLD
+  reasons   Json // ranked list of triggering reasons + evidence
+  policyVer String
+  decidedAt DateTime @default(now())
+}
+
+model QcAction {
+  id        String   @id @default(cuid())
+  invoiceId String
+  invoice   Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  actor     String
+  type      String // review | correct_metadata | correct_match | override_decision | rerun | escalate
+  before    Json?
+  after     Json?
+  note      String?
+  createdAt DateTime @default(now())
+
+  @@index([invoiceId])
+}
+
+model WorkflowRun {
+  id        String       @id @default(cuid())
+  invoiceId String       @unique
+  invoice   Invoice      @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  events    StageEvent[]
+  startedAt DateTime     @default(now())
+  endedAt   DateTime?
+}
+
+model StageEvent {
+  id        String      @id @default(cuid())
+  runId     String
+  run       WorkflowRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  stage     String // extract | resolve | match | decide
+  status    String // started | succeeded | failed | retried | low_confidence
+  latencyMs Int?
+  tokens    Int?
+  inputRef  Json?
+  outputRef Json?
+  error     String?
+  at        DateTime    @default(now())
+
+  @@index([runId])
+}
+
+model Submission {
+  id          String   @id @default(cuid())
+  invoiceId   String   @unique
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  payload     Json
+  submittedAt DateTime @default(now())
+  externalRef String?
+}

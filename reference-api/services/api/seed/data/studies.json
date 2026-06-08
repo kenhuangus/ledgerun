@@ -1,0 +1,8 @@
+[
+  {"id": 1, "sponsor_id": 1, "name": "LUMIN-2024", "protocol_number": "NWD-LUM-2024-001", "phase": "Phase III", "therapeutic_area": "Oncology"},
+  {"id": 2, "sponsor_id": 1, "name": "VERITAS", "protocol_number": "NWD-VER-2023-002", "phase": "Phase II", "therapeutic_area": "Cardiovascular"},
+  {"id": 3, "sponsor_id": 2, "name": "CATALYST Trial", "protocol_number": "CON-CAT-2024-101", "phase": "Phase III", "therapeutic_area": "Immunology"},
+  {"id": 4, "sponsor_id": 2, "name": "AURORA Extension", "protocol_number": "CON-AUR-2023-052", "phase": "Phase II", "therapeutic_area": "Neurology"},
+  {"id": 5, "sponsor_id": 3, "name": "SUMMIT Study", "protocol_number": "FAB-SMT-2024-301", "phase": "Phase III", "therapeutic_area": "Metabolic"},
+  {"id": 6, "sponsor_id": 4, "name": "FOUNDATION Registry", "protocol_number": "WDL-FDN-2024-401", "phase": "Observational", "therapeutic_area": "Rare Disease"}
+]

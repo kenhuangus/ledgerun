@@ -1,0 +1,26 @@
+node_modules
+.next
+out
+build
+dist
+
+# env
+.env
+.env.local
+.env*.local
+
+# vendored reference API: keep the source, drop its git history
+reference-api/.git
+
+# logs / runtime
+*.log
+.drop/
+uploads/
+
+# prisma
+prisma/*.db
+
+# os / editor
+.DS_Store
+*.tsbuildinfo
+next-env.d.ts

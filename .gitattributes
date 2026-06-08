@@ -1,0 +1,6 @@
+# Normalize line endings. Shell scripts MUST stay LF on every platform —
+# the reference API's docker-entrypoint.sh fails in-container with CRLF
+# ("exec /docker-entrypoint.sh: no such file or directory").
+* text=auto
+*.sh text eol=lf
+Dockerfile text eol=lf
