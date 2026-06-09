@@ -1,0 +1,84 @@
+[
+  {
+    "id": "00",
+    "kind": "title",
+    "title": "Ledger Run",
+    "subtitle": "AI Email Invoice Ingestion & Matching",
+    "kicker": "Live walkthrough · take-home submission",
+    "narration": "Ledger Run is an A I first invoice processing assistant for clinical trials. Invoices arrive over email, the A I extracts them, matches their line items to the scoped catalog, and decides on its own whether to submit them or hold them for review."
+  },
+  {
+    "id": "01",
+    "kind": "bullets",
+    "title": "The flow, in four stages",
+    "bullets": [
+      "Extract — Claude pulls metadata and line items from the P D F.",
+      "Resolve — sponsor, study, and site, via the M C P-wrapped reference A P I.",
+      "Match — each line against the sponsor and study scoped catalog.",
+      "Decide — a deterministic policy yields SUBMIT or HOLD with reasons.",
+      "No human gate before the verdict. Q C happens after, in the hub."
+    ],
+    "narration": "Every invoice runs through extract, resolve, match, and decide. Context resolution and catalog reads go through a real M C P server. The submit-or-hold verdict is a deterministic policy, not the L L M — so every decision is testable and explainable."
+  },
+  {
+    "id": "02",
+    "kind": "image",
+    "title": "The hub — submitted vs held lanes",
+    "image": "shots/01-queue.png",
+    "caption": "Two SUBMITTED. Six HELD. The trusted stream on the left, the exceptions that need judgment on the right.",
+    "narration": "This is the hub. Two invoices auto-submitted overnight — the reviewer ignores those. Six are held with exceptions, and that's where the work is. The home page makes the split unmissable."
+  },
+  {
+    "id": "03",
+    "kind": "image",
+    "title": "Auto-submit — the simple invoice",
+    "image": "shots/02-simple-submit.png",
+    "caption": "Context resolved, totals reconciled, all five line items matched. Even \"Complete Blood Count\" → catalog \"CBC\".",
+    "narration": "Here's the clean path. The simple invoice resolved to Contoso CATALYST at ninety-nine percent confidence, the totals reconcile, and all five line items match. Notice line four: \"Complete Blood Count\" matched the catalog entry \"CBC\" — the A I handled the acronym, no token overlap needed."
+  },
+  {
+    "id": "04",
+    "kind": "image",
+    "title": "Hold for review — price mismatch",
+    "image": "shots/03-medium-price.png",
+    "caption": "Ten of eleven lines matched. One line's unit price deviates beyond tolerance — HOLD.",
+    "narration": "The medium invoice resolved cleanly and ten of eleven lines matched. But line ten — I R B Ethics Fees — was billed beyond the price tolerance for its catalog item, so the policy holds the invoice and surfaces exactly which line and why."
+  },
+  {
+    "id": "05",
+    "kind": "image",
+    "title": "Large invoice — multiple exceptions on a 100-item catalog",
+    "image": "shots/04-large-exc.png",
+    "caption": "Twenty-seven line items, heavy rewording, abbreviations, and pass-through items. The shortlist keeps the prompt bounded.",
+    "narration": "The large invoice stresses the matcher. Twenty seven line items against a hundred-item catalog. The shortlist pre-filter keeps the prompt bounded, and the policy ranks every exception — unmatched lines, a low-confidence match, and the reasons appear inline so a reviewer can triage them at a glance."
+  },
+  {
+    "id": "06",
+    "kind": "image",
+    "title": "Mismatched metadata — corrected, then held",
+    "image": "shots/05-mismatched.png",
+    "caption": "Sponsor name was wrong. Protocol number won. resolved_corrected → HOLD pending confirmation.",
+    "narration": "This invoice had wrong metadata — wrong sponsor name, wrong protocol year. The resolver reconciled it by trusting the protocol number over the sponsor name, marked the context as resolved-corrected, and held the invoice so a human can confirm the correction before it ships."
+  },
+  {
+    "id": "07",
+    "kind": "bullets",
+    "title": "What ships",
+    "bullets": [
+      "Next.js + Prisma + Postgres + Tailwind hub.",
+      "Real M C P server (six tools) over the s t d i o transport.",
+      "Pluggable ingestion — drop-folder, upload, .eml file, real I M A P.",
+      "Seventy-two offline tests; clean docker compose up; live demo proven on all four samples.",
+      "Decision policy is pure, deterministic, and unit-tested — not the L L M."
+    ],
+    "narration": "Everything ships in one docker compose up. Real M C P over s t d i o, four ingestion sources including a real I M A P mailbox, seventy-two offline tests, and a pure deterministic decision policy. The L L M extracts and matches; the policy decides. That's what makes every verdict explainable."
+  },
+  {
+    "id": "08",
+    "kind": "title",
+    "title": "Thanks",
+    "subtitle": "Ledger Run — code, docs, and tests at the repo root",
+    "kicker": "AI decides first · you review after",
+    "narration": "Thanks for watching."
+  }
+]

@@ -20,6 +20,9 @@ uploads/
 # generated email fixtures (regenerate with `npm run make:emails`)
 sample-emails/
 
+# demo video intermediates (slides/frames/audio — the .mp4 is committed)
+demo/work/
+
 # prisma
 prisma/*.db
 

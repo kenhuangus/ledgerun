@@ -4,8 +4,8 @@
     {
       "name": "hub",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
-      "port": 3002
+      "runtimeArgs": ["run", "start"],
+      "autoPort": true
     }
   ]
 }

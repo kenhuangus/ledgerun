@@ -4,6 +4,8 @@ Ledger Run ingests clinical-trial vendor invoices, then autonomously runs them
 through a four-stage pipeline — **Extract → Resolve → Match → Decide** — and lands
 each invoice in a review hub with a SUBMIT or HOLD verdict and full evidence.
 
+> **Walkthrough video:** [`demo/ledgerun-demo.mp4`](demo/ledgerun-demo.mp4) — 2:14, 1920×1080, narrated. Live UI footage of all four sample scenarios (auto-submit, price mismatch, large-catalog exceptions, corrected metadata).
+
 The pipeline runs to a decision with **no human gate before the verdict** (the
 deliberate divergence from the reference README's "hard gate"; see
 `architecture.md` §10). Humans act only *after*, via post-decision QC controls
