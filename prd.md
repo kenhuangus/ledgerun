@@ -57,7 +57,7 @@ Practical orchestration and explainable decision behavior — **not** state-of-t
 ### Non-goals (for this build)
 - Production-grade OCR / document intelligence. Sample invoices are text-extractable PDFs; perfect layout parsing is out of scope.
 - A real ClinRun integration. No ClinRun submission API is provided; we implement a **submission stub** that records the handoff (see §7).
-- Live email-provider integration in production. Email ingestion is demonstrated via a pluggable adapter (IMAP-poll or a drop-folder/webhook simulating an inbox); a real Gmail/Graph connector is a future extension.
+- OAuth email-provider connectors (Gmail/Microsoft Graph). Email ingestion is implemented via pluggable adapters — a generic `ImapSource` (real mailbox polling) and an `EmlFolderSource` (RFC822 `.eml` files, used for the offline demo/tests); provider-specific OAuth connectors are a future extension.
 - Auth/SSO, multi-tenant RBAC, billing. Single trusted operator context is assumed.
 - Learning/feedback loops that retrain models from QC corrections.
 

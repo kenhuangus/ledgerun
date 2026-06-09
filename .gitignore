@@ -17,6 +17,9 @@ reference-api/.git
 .drop/
 uploads/
 
+# generated email fixtures (regenerate with `npm run make:emails`)
+sample-emails/
+
 # prisma
 prisma/*.db
 

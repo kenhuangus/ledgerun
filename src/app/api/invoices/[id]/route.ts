@@ -1,6 +1,6 @@
 /**
- * GET /api/invoices/[id] — full invoice detail (FR6). STUB.
- * Owned by the API/Service module. Delegates to InvoiceService.get.
+ * GET /api/invoices/[id] — full invoice detail (FR6).
+ * Thin handler: delegates to InvoiceService.get.
  */
 
 import { NextResponse } from "next/server";

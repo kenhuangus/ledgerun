@@ -12,6 +12,8 @@
     "test:watch": "vitest",
     "mcp": "tsx src/mcp-server/index.ts",
     "demo": "tsx scripts/demo.ts",
+    "make:emails": "tsx scripts/make-sample-emails.ts",
+    "demo:email": "npm run make:emails && tsx scripts/demo-email.ts",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "lint": "next lint"
@@ -23,8 +25,9 @@
     "@anthropic-ai/sdk": "^0.32.1",
     "@modelcontextprotocol/sdk": "^1.0.4",
     "@prisma/client": "^5.22.0",
+    "imapflow": "^1.3.7",
+    "mailparser": "^3.9.9",
     "next": "^14.2.18",
-    "pdf-parse": "^1.1.1",
     "pdfjs-dist": "^4.10.38",
     "pino": "^9.5.0",
     "react": "^18.3.1",
@@ -32,8 +35,8 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/mailparser": "^3.4.6",
     "@types/node": "^20.17.6",
-    "@types/pdf-parse": "^1.1.4",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.3",

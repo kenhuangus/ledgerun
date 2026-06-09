@@ -17,6 +17,12 @@ import { DropFolderSource, SAMPLE_INVOICES_DIR } from "@/ingestion/dropFolder";
 import { getInvoiceService } from "@/services/invoiceService";
 
 async function main(): Promise<void> {
+  // Exercise the REAL MCP path by default: the orchestrator resolves context and
+  // fetches the scoped catalog through the MCP server over stdio (FR3 — "via the
+  // MCP-wrapped reference API"). Set MCP_TRANSPORT=http to use the in-process
+  // DirectMcpClient instead.
+  if (!process.env.MCP_TRANSPORT) process.env.MCP_TRANSPORT = "stdio";
+
   const service = getInvoiceService();
   const source = new DropFolderSource(SAMPLE_INVOICES_DIR, "sample");
 

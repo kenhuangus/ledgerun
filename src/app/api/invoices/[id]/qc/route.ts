@@ -1,6 +1,6 @@
 /**
- * POST /api/invoices/[id]/qc — apply a post-decision QC action (FR7). STUB.
- * Owned by the API/Service module. Delegates to InvoiceService.applyQcAction.
+ * POST /api/invoices/[id]/qc — apply a post-decision QC action (FR7).
+ * Thin handler: delegates to InvoiceService.applyQcAction.
  */
 
 import { NextResponse } from "next/server";

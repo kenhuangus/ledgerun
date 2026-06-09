@@ -52,39 +52,31 @@ services:
       timeout: 5s
       retries: 10
 
-  mcp-server:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    command: ["npm", "run", "mcp"]
-    environment:
-      REFERENCE_API_URL: http://reference-api:8000
-      MCP_TRANSPORT: http
-    ports:
-      - "7000:7000"
-    depends_on:
-      reference-api:
-        condition: service_started
+  # NOTE: there is no standalone MCP-server container. The MCP server speaks the
+  # stdio transport, so it is spawned as a child of whatever process needs it
+  # (e.g. `npm run demo`, which uses MCP_TRANSPORT=stdio). The app container uses
+  # the in-process DirectMcpClient, which calls the exact same MCP tool functions.
+  # Run the server standalone for inspection with `npm run mcp`.
 
   app:
     build:
       context: .
       dockerfile: Dockerfile
-    command: ["npm", "run", "start"]
+    # Push the Prisma schema to app-db on boot, then start — makes `docker compose
+    # up` turnkey (no manual migration step on a fresh volume).
+    command: ["sh", "-c", "npx prisma db push --skip-generate --accept-data-loss && npm run start"]
     environment:
       DATABASE_URL: postgresql://ledgerun:ledgerun@app-db:5432/ledgerun?schema=public
       REFERENCE_API_URL: http://reference-api:8000
-      MCP_TRANSPORT: http
-      MCP_SERVER_URL: http://mcp-server:7000
+      # Unset transport -> in-process DirectMcpClient (same MCP tools, no child spawn).
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-opus-4-8}
     ports:
-      - "3000:3000"
+      # Host 3000 is commonly taken; publish the app on 3100 -> container 3000.
+      - "3100:3000"
     depends_on:
       app-db:
         condition: service_healthy
-      mcp-server:
-        condition: service_started
       reference-api:
         condition: service_started
 

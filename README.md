@@ -12,6 +12,7 @@ deliberate divergence from the reference README's "hard gate"; see
 ## Architecture at a glance
 
 - **Next.js (App Router, TypeScript strict) + Tailwind** — the review hub and thin API routes (`src/app`).
+- **Ingestion** (`src/ingestion`) — pluggable `InvoiceSource` adapters (FR1): `EmlFolderSource` + `ImapSource` (invoices arriving as PDF attachments in **email**), plus `DropFolderSource` and upload. All yield the same `RawInvoice` into one pipeline.
 - **Pipeline** (`src/pipeline`) — `extract`, `resolve`, `match`, `decide` stages driven by a state-machine `orchestrator`. The verdict is owned by a **pure deterministic policy** (`decide.ts`), not the LLM.
 - **LLM seam** (`src/llm/anthropic.ts`) — Claude behind a swappable `LlmClient` interface (structured output + tool-use loop).
 - **MCP server + client** (`src/mcp-server`, `src/mcp`) — a real MCP server wrapping the read-only reference API; all canonical data is reached through it.
@@ -48,9 +49,15 @@ Copy `.env.example` to `.env` and fill in:
 # 1. Install
 npm install
 
-# 2. Bring up Postgres + the reference API (and optionally the app) via Docker
+# 2a. Turnkey: build + run everything (reference API, both DBs, and the app).
+#     The app container pushes the Prisma schema on boot, so this is all you need.
+docker compose up --build
+#   open http://localhost:3000
+
+# --- or, for local dev against just the infra: ---
+
+# 2b. Bring up Postgres + the reference API only
 docker compose up -d reference-db reference-api app-db
-#   (or `docker compose up` to also run the mcp-server + app containers)
 
 # 3. Generate the Prisma client and push the schema
 npm run db:generate
@@ -60,6 +67,11 @@ npm run db:push
 npm run dev
 #   open http://localhost:3000
 ```
+
+> There is no standalone MCP-server container: the MCP server speaks stdio, so it
+> is spawned as a child by whatever needs it (`npm run demo` uses
+> `MCP_TRANSPORT=stdio`). The app container resolves reference data via the
+> in-process `DirectMcpClient`, which calls the same MCP tool functions.
 
 In the hub, click **Ingest samples** (or POST `/api/ingest`) to pull the four
 sample invoices from `reference-api/sample-invoices/` through the real pipeline.
@@ -85,6 +97,18 @@ npm run demo
 Ingests the four `reference-api/sample-invoices/*.pdf` through the real pipeline
 and prints each invoice's verdict + exceptions. Requires `ANTHROPIC_API_KEY`, the
 reference API running, and a Postgres `DATABASE_URL` with the schema pushed.
+`npm run demo` defaults `MCP_TRANSPORT=stdio`, so context resolution and catalog
+matching go through the **real MCP server over the MCP protocol** (FR3).
+
+To prove the **email** ingestion path (FR1) end to end:
+
+```bash
+npm run demo:email   # generates .eml fixtures, then ingests the PDF attachments
+```
+
+This wraps each sample PDF in an RFC822 email, then `EmlFolderSource` parses the
+message, extracts the PDF attachment, and feeds it to the same pipeline. (For a
+real inbox, `ImapSource` polls `IMAP_*`-configured mailboxes for UNSEEN messages.)
 
 Expected behavior (prd §9):
 
@@ -102,7 +126,9 @@ Expected behavior (prd §9):
 | `npm run dev` | Next.js dev server. |
 | `npm run build` | Production build. |
 | `npm test` | Vitest. |
-| `npm run demo` | Live end-to-end sample run. |
+| `npm run demo` | Live end-to-end sample run (over real MCP, stdio). |
+| `npm run demo:email` | Live end-to-end run ingesting from **email** (.eml attachments). |
+| `npm run make:emails` | Generate `.eml` fixtures from the sample PDFs. |
 | `npm run mcp` | Run the MCP server standalone (stdio). |
 | `npm run db:generate` / `npm run db:push` | Prisma client + schema push. |
 | `npm run typecheck` | `tsc --noEmit`. |
