@@ -1,10 +1,17 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // pdf-parse and the Anthropic/MCP SDKs are server-only; keep them external to
+  // pdfjs-dist and the Anthropic/MCP SDKs are server-only; keep them external to
   // the server bundle so Next does not try to bundle their native/dynamic bits.
+  // pdfjs-dist in particular: bundling it loses the worker (pdf.worker.mjs) and
+  // fails at runtime with "Cannot find module /app/.next/server/chunks/pdf.worker.mjs".
   experimental: {
-    serverComponentsExternalPackages: ["pdf-parse", "@prisma/client", "@modelcontextprotocol/sdk"],
+    serverComponentsExternalPackages: [
+      "pdfjs-dist",
+      "@prisma/client",
+      "@modelcontextprotocol/sdk",
+      "@anthropic-ai/sdk",
+    ],
   },
 };
 
